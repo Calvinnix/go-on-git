@@ -48,6 +48,8 @@ type StatusModel struct {
 	confirmMode     confirmAction
 	stashMode       stashMode
 	stashInput      textinput.Model
+	commitMode      bool
+	commitInput     textinput.Model
 	quitting        bool
 	lastKey         string
 	err             error
@@ -66,9 +68,16 @@ func NewStatusModelWithHelp(showHelp bool) StatusModel {
 	ti.Placeholder = "Stash message (optional)"
 	ti.CharLimit = 200
 	ti.Width = 40
+
+	ci := textinput.New()
+	ci.Placeholder = "Commit message"
+	ci.CharLimit = 200
+	ci.Width = 50
+
 	return StatusModel{
 		selected:        make(map[int]bool),
 		stashInput:      ti,
+		commitInput:     ci,
 		showVerboseHelp: showHelp,
 	}
 }
@@ -129,6 +138,30 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				var cmd tea.Cmd
 				m.stashInput, cmd = m.stashInput.Update(msg)
+				return m, cmd
+			}
+		}
+
+		// Handle commit input mode
+		if m.commitMode {
+			switch key {
+			case "enter":
+				message := m.commitInput.Value()
+				m.commitMode = false
+				m.commitInput.Reset()
+				m.commitInput.Blur()
+				if message != "" {
+					return m, m.doCommit(message)
+				}
+				return m, nil
+			case "esc":
+				m.commitMode = false
+				m.commitInput.Reset()
+				m.commitInput.Blur()
+				return m, nil
+			default:
+				var cmd tea.Cmd
+				m.commitInput, cmd = m.commitInput.Update(msg)
 				return m, cmd
 			}
 		}
@@ -247,7 +280,15 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "c":
-			// Run git commit and quit when done
+			// Inline commit with message
+			if m.status != nil && len(m.status.Staged) > 0 {
+				m.commitMode = true
+				m.commitInput.Focus()
+				return m, textinput.Blink
+			}
+			return m, nil
+		case "C":
+			// Run git commit with editor
 			m.quitting = true
 			return m, runGitCommit()
 		case "s":
@@ -462,6 +503,16 @@ func (m StatusModel) doPush() tea.Cmd {
 	}
 }
 
+func (m StatusModel) doCommit(message string) tea.Cmd {
+	return func() tea.Msg {
+		err := git.Commit(message)
+		if err != nil {
+			return errMsg{err}
+		}
+		return refreshStatus()
+	}
+}
+
 func (m StatusModel) doStash(mode stashMode, message string) tea.Cmd {
 	if mode == stashAll {
 		return func() tea.Msg {
@@ -636,6 +687,10 @@ func (m StatusModel) View() string {
 		}
 		content.WriteString(m.stashInput.View())
 		content.WriteString(StyleMuted.Render("  (enter to confirm, esc to cancel)"))
+	} else if m.commitMode {
+		content.WriteString("Commit message: ")
+		content.WriteString(m.commitInput.View())
+		content.WriteString(StyleMuted.Render("  (enter to commit, esc to cancel)"))
 	}
 
 	// Show persistent help bar when in help mode
@@ -717,7 +772,7 @@ func (m StatusModel) renderHelp() string {
 		{
 			title: "Actions",
 			items: []struct{ key, desc string }{
-				{"c", "commit"},
+				{"c/C", "commit"},
 				{"p", "push"},
 				{"s/S", "stash"},
 			},
@@ -795,7 +850,7 @@ func (m StatusModel) renderHelpBar() string {
 		{"a/A", "stage"},
 		{"u/U", "unstage"},
 		{"d", "discard"},
-		{"c", "commit"},
+		{"c/C", "commit"},
 		{"p", "push"},
 	}
 

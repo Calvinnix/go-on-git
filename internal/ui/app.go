@@ -84,6 +84,10 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch m.mode {
 		case viewStatus:
+			// Skip navigation when in input modes
+			if m.status.commitMode || m.status.stashMode != stashNone || m.status.confirmMode != confirmNone {
+				break
+			}
 			// Handle navigation keys from status
 			switch key {
 			case "l", "right", "enter":

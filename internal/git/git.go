@@ -163,6 +163,12 @@ func Push() error {
 	return err
 }
 
+// Commit creates a commit with the given message
+func Commit(message string) error {
+	_, err := Run("commit", "-m", message)
+	return err
+}
+
 // GetLog returns the raw git log output
 func GetLog(limit int) (string, error) {
 	return Run("log", fmt.Sprintf("-%d", limit))
