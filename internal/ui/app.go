@@ -86,7 +86,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case viewStatus:
 			// Handle navigation keys from status
 			switch key {
-			case "l", "right":
+			case "l", "right", "enter":
 				// Enter file diff view for selected file(s)
 				items := m.status.getSelectedItems()
 				if len(items) > 0 {

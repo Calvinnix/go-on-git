@@ -180,7 +180,7 @@ func (m DiffModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "?":
 			m.showHelp = true
 			return m, nil
-		case "l", "right":
+		case "l", "right", "enter":
 			if len(m.hunks) > 0 && m.cursor < len(m.hunks) {
 				m.viewingHunk = true
 				m.scrollOffset = 0
