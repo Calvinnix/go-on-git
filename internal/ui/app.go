@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"simple-git/internal/git"
+	"go-on-git/internal/git"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-BINARY_NAME="simple-git"
+BINARY_NAME="go-on-git"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 
 echo "Building $BINARY_NAME..."

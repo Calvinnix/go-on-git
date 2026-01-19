@@ -1,4 +1,4 @@
-module simple-git
+module go-on-git
 
 go 1.24.0
 

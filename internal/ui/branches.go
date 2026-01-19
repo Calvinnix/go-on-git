@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"simple-git/internal/git"
+	"go-on-git/internal/git"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"

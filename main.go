@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"simple-git/internal/git"
-	"simple-git/internal/ui"
+	"go-on-git/internal/git"
+	"go-on-git/internal/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -28,7 +28,7 @@ func main() {
 			printHelp()
 			os.Exit(0)
 		case arg == "--version" || arg == "-v":
-			fmt.Printf("simple-git version %s\n", version)
+			fmt.Printf("go-on-git version %s\n", version)
 			os.Exit(0)
 		case arg == "--hide-help":
 			showHelp = false
@@ -62,10 +62,10 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Println(`simple-git - Lightweight Git TUI
+	fmt.Println(`go-on-git - Lightweight Git TUI
 
 Usage:
-  simple-git [options]
+  go-on-git [options]
 
 Options:
   --hide-help         Start with help bar hidden

@@ -1,4 +1,4 @@
-# simple-git
+# go-on-git
 
 A lightweight terminal user interface for Git, built with Go and [Bubbletea](https://github.com/charmbracelet/bubbletea).
 
@@ -7,7 +7,7 @@ A lightweight terminal user interface for Git, built with Go and [Bubbletea](htt
 ### Homebrew
 
 ```bash
-brew install Calvinnix/tap/simple-git
+brew install Calvinnix/tap/go-on-git
 ```
 
 ## Usage
@@ -15,10 +15,10 @@ brew install Calvinnix/tap/simple-git
 Run from within a Git repository:
 
 ```bash
-simple-git             # Interactive status view
-simple-git --hide-help # Start with help bar hidden
-simple-git --help      # Show help
-simple-git --version   # Show version
+go-on-git             # Interactive status view
+go-on-git --hide-help # Start with help bar hidden
+go-on-git --help      # Show help
+go-on-git --version   # Show version
 ```
 
 ### Setting up an alias
@@ -26,14 +26,14 @@ simple-git --version   # Show version
 For convenience, add an alias to your shell configuration (`~/.bashrc`, `~/.zshrc`, etc.):
 
 ```bash
-alias g='simple-git'
+alias g='go-on-git'
 ```
 
 Then reload your shell or run `source ~/.bashrc` (or equivalent).
 
 ## Views
 
-simple-git has multiple views you can navigate between:
+go-on-git has multiple views you can navigate between:
 
 - **Status View** (default) - Stage/unstage files, commit, push
 - **Diff View** - View and stage/unstage individual hunks
@@ -95,7 +95,7 @@ simple-git has multiple views you can navigate between:
 You can override default key bindings using command line arguments:
 
 ```bash
-simple-git --key.action=key
+go-on-git --key.action=key
 ```
 
 ### Available Actions
@@ -134,16 +134,16 @@ simple-git --key.action=key
 
 ```bash
 # Colemak layout
-simple-git --key.up=e --key.down=n --key.left=m --key.right=i
+go-on-git --key.up=e --key.down=n --key.left=m --key.right=i
 
 # Dvorak-friendly
-simple-git --key.up=c --key.down=t
+go-on-git --key.up=c --key.down=t
 
 # Vim muscle memory alternatives
-simple-git --key.quit=ZZ
+go-on-git --key.quit=ZZ
 
 # Multiple overrides
-simple-git --key.commit=w --key.push=P --key.quit=x
+go-on-git --key.commit=w --key.push=P --key.quit=x
 ```
 
 ### Shell Alias with Custom Keys
@@ -152,5 +152,5 @@ Add to your shell configuration for persistent custom keymaps:
 
 ```bash
 # ~/.bashrc or ~/.zshrc
-alias g='simple-git --key.up=e --key.down=n'
+alias g='go-on-git --key.up=e --key.down=n'
 ```

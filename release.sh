@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-BINARY_NAME="simple-git"
+BINARY_NAME="go-on-git"
 DIST_DIR="dist"
-FORMULA_PATH="$HOME/dev/homebrew-tap/Formula/simple-git.rb"
-REPO="Calvinnix/simple-git"
+FORMULA_PATH="$HOME/dev/homebrew-tap/Formula/go-on-git.rb"
+REPO="Calvinnix/go-on-git"
 
 # Get current version from main.go
 CURRENT_VERSION=$(grep 'const version' main.go | sed 's/.*"\(.*\)".*/\1/')
@@ -56,40 +56,40 @@ for key in "${!checksums[@]}"; do
 done
 
 cat > "$FORMULA_PATH" << EOF
-class SimpleGit < Formula
+class GoOnGit < Formula
   desc "Lightweight Git TUI"
-  homepage "https://github.com/Calvinnix/simple-git"
+  homepage "https://github.com/Calvinnix/go-on-git"
   version "$VERSION"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/Calvinnix/simple-git/releases/download/v$VERSION/$BINARY_NAME-darwin-arm64.tar.gz"
-      sha256 "${checksums[simple-git-darwin-arm64]}"
+      url "https://github.com/Calvinnix/go-on-git/releases/download/v$VERSION/$BINARY_NAME-darwin-arm64.tar.gz"
+      sha256 "${checksums[go-on-git-darwin-arm64]}"
     end
     on_intel do
-      url "https://github.com/Calvinnix/simple-git/releases/download/v$VERSION/$BINARY_NAME-darwin-amd64.tar.gz"
-      sha256 "${checksums[simple-git-darwin-amd64]}"
+      url "https://github.com/Calvinnix/go-on-git/releases/download/v$VERSION/$BINARY_NAME-darwin-amd64.tar.gz"
+      sha256 "${checksums[go-on-git-darwin-amd64]}"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/Calvinnix/simple-git/releases/download/v$VERSION/$BINARY_NAME-linux-arm64.tar.gz"
-      sha256 "${checksums[simple-git-linux-arm64]}"
+      url "https://github.com/Calvinnix/go-on-git/releases/download/v$VERSION/$BINARY_NAME-linux-arm64.tar.gz"
+      sha256 "${checksums[go-on-git-linux-arm64]}"
     end
     on_intel do
-      url "https://github.com/Calvinnix/simple-git/releases/download/v$VERSION/$BINARY_NAME-linux-amd64.tar.gz"
-      sha256 "${checksums[simple-git-linux-amd64]}"
+      url "https://github.com/Calvinnix/go-on-git/releases/download/v$VERSION/$BINARY_NAME-linux-amd64.tar.gz"
+      sha256 "${checksums[go-on-git-linux-amd64]}"
     end
   end
 
   def install
-    bin.install "simple-git"
+    bin.install "go-on-git"
   end
 
   test do
-    assert_match "simple-git version", shell_output("#{bin}/simple-git --version")
+    assert_match "go-on-git version", shell_output("#{bin}/go-on-git --version")
   end
 end
 EOF
@@ -136,7 +136,7 @@ echo
 echo "Updating homebrew-tap..."
 cd ~/dev/homebrew-tap
 git add -A
-git commit -m "Update simple-git to v$VERSION"
+git commit -m "Update go-on-git to v$VERSION"
 git push
 
 echo

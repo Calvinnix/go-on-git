@@ -25,7 +25,7 @@ func NewTestRepo(t *testing.T) *TestRepo {
 	}
 
 	// Create a temp directory
-	dir, err := os.MkdirTemp("", "simple-git-test-*")
+	dir, err := os.MkdirTemp("", "go-on-git-test-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
@@ -147,7 +147,7 @@ func (r *TestRepo) SetupRemote() string {
 	r.T.Helper()
 
 	// Create a bare repo as remote
-	remoteDir, err := os.MkdirTemp("", "simple-git-remote-*")
+	remoteDir, err := os.MkdirTemp("", "go-on-git-remote-*")
 	if err != nil {
 		r.T.Fatalf("failed to create remote dir: %v", err)
 	}
