@@ -98,6 +98,8 @@ You can override default key bindings using command line arguments:
 go-on-git --key.action=key
 ```
 
+Overrides that introduce new shared keys will exit with an error. Avoid mapping a key to multiple actions.
+
 ### Available Actions
 
 | Action | Default | Description |

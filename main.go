@@ -53,6 +53,17 @@ func main() {
 		}
 	}
 
+	conflicts := ui.FindKeymapOverrideConflicts(ui.DefaultKeymap(), ui.Keys)
+	if len(conflicts) > 0 {
+		fmt.Fprintln(os.Stderr, "keymap override error: overrides introduced new shared keys")
+		for _, conflict := range conflicts {
+			fmt.Fprintf(os.Stderr, "  key %q is mapped to actions: %s\n", conflict.Key, strings.Join(conflict.Actions, ", "))
+		}
+		fmt.Fprintln(os.Stderr, "Next steps: pick keys that do not overlap other actions or remove the conflicting overrides.")
+		fmt.Fprintln(os.Stderr, "Run `go-on-git --help` to see available actions and defaults.")
+		os.Exit(1)
+	}
+
 	model := ui.NewAppModelWithOptions(showHelp)
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
@@ -99,6 +110,7 @@ Key Bindings:
 
 Keymap Overrides:
   Override default keys with --key.action=key
+  Overrides that introduce new shared keys will exit with an error
   Example: --key.down=n --key.up=e --key.commit=w
 
   Available actions:
