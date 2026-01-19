@@ -7,8 +7,7 @@ A lightweight terminal user interface for Git, built with Go and [Bubbletea](htt
 ### Homebrew
 
 ```bash
-brew tap Calvinnix/tap
-brew install simple-git
+brew install Calvinnix/tap/simple-git
 ```
 
 ## Usage
