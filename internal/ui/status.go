@@ -166,8 +166,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// Check for gg sequence
-		if m.lastKey == "g" && key == "g" {
+		// Check for gg sequence (go to top)
+		if m.lastKey == Keys.Top && key == Keys.Top {
 			m.lastKey = ""
 			m.cursor = 0
 			if m.visualMode {
@@ -176,14 +176,14 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		if key == "g" {
-			m.lastKey = "g"
+		if key == Keys.Top {
+			m.lastKey = Keys.Top
 			return m, nil
 		}
 		m.lastKey = ""
 
-		switch key {
-		case "q":
+		switch {
+		case key == Keys.Quit:
 			if m.visualMode {
 				m.visualMode = false
 				m.selected = make(map[int]bool)
@@ -191,7 +191,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.quitting = true
 			return m, tea.Quit
-		case "esc":
+		case key == "esc":
 			if m.visualMode || len(m.selected) > 0 {
 				m.visualMode = false
 				m.selected = make(map[int]bool)
@@ -199,32 +199,24 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.quitting = true
 			return m, tea.Quit
-		case "?":
+		case key == Keys.Help:
 			m.showHelp = true
 			return m, nil
-		case "/":
+		case key == Keys.VerboseHelp:
 			m.showVerboseHelp = !m.showVerboseHelp
 			return m, nil
-		case "v":
-			if m.visualMode {
+		case key == Keys.Visual || key == "V":
+			if m.visualMode && key == Keys.Visual {
 				m.visualMode = false
 				m.selected = make(map[int]bool)
-			} else {
+			} else if !m.visualMode {
 				m.visualMode = true
 				m.visualStart = m.cursor
 				m.selected = make(map[int]bool)
 				m.selected[m.cursor] = true
 			}
 			return m, nil
-		case "V":
-			if !m.visualMode {
-				m.visualMode = true
-				m.visualStart = m.cursor
-				m.selected = make(map[int]bool)
-				m.selected[m.cursor] = true
-			}
-			return m, nil
-		case "j", "down":
+		case key == Keys.Down || key == "down":
 			if len(m.items) > 0 {
 				m.cursor = min(m.cursor+1, len(m.items)-1)
 				if m.visualMode {
@@ -232,7 +224,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			return m, nil
-		case "k", "up":
+		case key == Keys.Up || key == "up":
 			if len(m.items) > 0 {
 				m.cursor = max(m.cursor-1, 0)
 				if m.visualMode {
@@ -240,7 +232,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			return m, nil
-		case "G":
+		case key == Keys.Bottom:
 			if len(m.items) > 0 {
 				m.cursor = len(m.items) - 1
 				if m.visualMode {
@@ -248,7 +240,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			return m, nil
-		case "h", "left":
+		case key == Keys.Select || key == "left":
 			// Toggle selection of current item (non-contiguous multi-select)
 			if len(m.items) > 0 && !m.visualMode {
 				if m.selected[m.cursor] {
@@ -258,28 +250,28 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			return m, nil
-		case " ":
+		case key == " ":
 			return m, m.toggleStage()
-		case "a":
+		case key == Keys.Stage:
 			return m, m.stageFiles()
-		case "A":
+		case key == Keys.StageAll:
 			return m, m.stageAll()
-		case "u":
+		case key == Keys.Unstage:
 			return m, m.unstageFiles()
-		case "U":
+		case key == Keys.UnstageAll:
 			return m, m.unstageAll()
-		case "d":
+		case key == Keys.Discard:
 			if len(m.items) > 0 && (len(m.selected) > 0 || !m.visualMode) {
 				m.confirmMode = confirmDiscard
 			}
 			return m, nil
-		case "p":
+		case key == Keys.Push:
 			// Push with confirmation
 			if m.branchStatus.Remote != "" && m.branchStatus.Ahead > 0 {
 				m.confirmMode = confirmPush
 			}
 			return m, nil
-		case "c":
+		case key == Keys.Commit:
 			// Inline commit with message
 			if m.status != nil && len(m.status.Staged) > 0 {
 				m.commitMode = true
@@ -287,11 +279,11 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, textinput.Blink
 			}
 			return m, nil
-		case "C":
+		case key == Keys.CommitEdit:
 			// Run git commit with editor
 			m.quitting = true
 			return m, runGitCommit()
-		case "s":
+		case key == Keys.Stash:
 			// Stash selected file(s)
 			if len(m.items) > 0 {
 				m.stashMode = stashFiles
@@ -299,7 +291,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, textinput.Blink
 			}
 			return m, nil
-		case "S":
+		case key == Keys.StashAll:
 			// Stash all changes
 			if len(m.items) > 0 {
 				m.stashMode = stashAll

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"simple-git/internal/git"
 	"simple-git/internal/ui"
@@ -22,15 +23,29 @@ func main() {
 	showHelp := true
 
 	for _, arg := range args {
-		switch arg {
-		case "--help", "-h":
+		switch {
+		case arg == "--help" || arg == "-h":
 			printHelp()
 			os.Exit(0)
-		case "--version", "-v":
+		case arg == "--version" || arg == "-v":
 			fmt.Printf("simple-git version %s\n", version)
 			os.Exit(0)
-		case "--hide-help":
+		case arg == "--hide-help":
 			showHelp = false
+		case strings.HasPrefix(arg, "--key."):
+			// Parse keymap override: --key.action=key
+			override := strings.TrimPrefix(arg, "--key.")
+			action, key, valid := ui.ParseKeymapArg(override)
+			if !valid {
+				fmt.Fprintf(os.Stderr, "invalid keymap format: %s\n", arg)
+				fmt.Fprintln(os.Stderr, "expected format: --key.action=key")
+				os.Exit(1)
+			}
+			if !ui.Keys.ApplyOverride(action, key) {
+				fmt.Fprintf(os.Stderr, "unknown keymap action: %s\n", action)
+				fmt.Fprintf(os.Stderr, "available actions: %s\n", strings.Join(ui.ListKeymapActions(), ", "))
+				os.Exit(1)
+			}
 		default:
 			fmt.Fprintf(os.Stderr, "unknown option: %s\n", arg)
 			printHelp()
@@ -53,9 +68,10 @@ Usage:
   simple-git [options]
 
 Options:
-  --hide-help   Start with help bar hidden
-  -h, --help    Show this help message
-  -v, --version Show version
+  --hide-help         Start with help bar hidden
+  --key.action=key    Override a key binding (see below)
+  -h, --help          Show this help message
+  -v, --version       Show version
 
 Navigation:
   l/→         View file diff (from status)
@@ -74,10 +90,21 @@ Key Bindings:
   u/U         Unstage file(s) / Unstage all
   s/S         Stash file(s) / Stash all
   d           Discard/delete (with confirmation)
-  c           Commit staged changes
+  c/C         Commit inline / with editor
   p           Push commits
   n           Create new branch (in branches view)
   ?           Toggle quick help
   /           Toggle verbose help
-  q/ESC       Quit`)
+  q/ESC       Quit
+
+Keymap Overrides:
+  Override default keys with --key.action=key
+  Example: --key.down=n --key.up=e --key.commit=w
+
+  Available actions:
+    up, down, left, right, top, bottom, select, back, quit,
+    stage, stage-all, unstage, unstage-all, discard,
+    commit, commit-edit, push, stash, stash-all,
+    file-diff, all-diffs, branches, stashes, log,
+    visual, help, verbose-help, new-branch, delete`)
 }

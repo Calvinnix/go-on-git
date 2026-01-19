@@ -89,8 +89,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			// Handle navigation keys from status
-			switch key {
-			case "l", "right", "enter":
+			if key == Keys.FileDiff || key == Keys.Right || key == "right" || key == "enter" {
 				// Enter file diff view for selected file(s)
 				items := m.status.getSelectedItems()
 				if len(items) > 0 {
@@ -107,26 +106,26 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(tea.EnterAltScreen, m.diff.Init())
 				}
 				return m, nil
-			case "i":
+			} else if key == Keys.AllDiffs {
 				// Enter full diff view
 				m.diff = NewDiffModelWithSize(nil, m.width, m.height)
 				m.mode = viewFullDiff
 				return m, tea.Batch(tea.EnterAltScreen, m.diff.Init())
-			case "b":
+			} else if key == Keys.Branches {
 				// Enter branches view
 				m.branches = NewBranchesModel()
 				m.branches.width = m.width
 				m.branches.height = m.height
 				m.mode = viewBranches
 				return m, tea.Batch(tea.EnterAltScreen, m.branches.Init())
-			case "e":
+			} else if key == Keys.Stashes {
 				// Enter stashes view
 				m.stashes = NewStashesModel()
 				m.stashes.width = m.width
 				m.stashes.height = m.height
 				m.mode = viewStashes
 				return m, tea.Batch(tea.EnterAltScreen, m.stashes.Init())
-			case "o":
+			} else if key == Keys.Log {
 				// Enter log view
 				m.log = NewLogModelWithSize(m.width, m.height)
 				m.mode = viewLog
