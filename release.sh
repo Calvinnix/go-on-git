@@ -1,11 +1,26 @@
 #!/bin/bash
 set -e
 
-VERSION=$(grep 'const version' main.go | sed 's/.*"\(.*\)".*/\1/')
 BINARY_NAME="simple-git"
 DIST_DIR="dist"
 FORMULA_PATH="$HOME/dev/homebrew-tap/Formula/simple-git.rb"
+REPO="Calvinnix/simple-git"
 
+# Get current version from main.go
+CURRENT_VERSION=$(grep 'const version' main.go | sed 's/.*"\(.*\)".*/\1/')
+
+# Prompt for version
+echo "Current version: $CURRENT_VERSION"
+read -p "Enter version to release (press Enter for $CURRENT_VERSION): " INPUT_VERSION
+VERSION="${INPUT_VERSION:-$CURRENT_VERSION}"
+
+# Update main.go if version changed
+if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+    echo "Updating version in main.go from $CURRENT_VERSION to $VERSION..."
+    sed -i "s/const version = \"$CURRENT_VERSION\"/const version = \"$VERSION\"/" main.go
+fi
+
+echo
 echo "Building $BINARY_NAME v$VERSION"
 echo
 
@@ -82,6 +97,31 @@ EOF
 echo
 echo "Updated $FORMULA_PATH"
 echo
-echo "Next steps:"
-echo "  1. Upload dist/*.tar.gz to GitHub release v$VERSION"
-echo "  2. cd ~/dev/homebrew-tap && git add -A && git commit -m 'Update simple-git to v$VERSION' && git push"
+
+# Create git tag and push if it doesn't exist
+if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
+    echo "Creating and pushing tag v$VERSION..."
+    git add main.go
+    git commit -m "Release v$VERSION" --allow-empty
+    git tag "v$VERSION"
+    git push origin master
+    git push origin "v$VERSION"
+else
+    echo "Tag v$VERSION already exists"
+fi
+
+# Create GitHub release and upload artifacts
+echo
+echo "Creating GitHub release v$VERSION..."
+gh release create "v$VERSION" \
+    --repo "$REPO" \
+    --title "v$VERSION" \
+    --generate-notes \
+    "$DIST_DIR"/*.tar.gz
+
+echo
+echo "Release v$VERSION created successfully!"
+echo "View at: https://github.com/$REPO/releases/tag/v$VERSION"
+echo
+echo "Next step:"
+echo "  cd ~/dev/homebrew-tap && git add -A && git commit -m 'Update simple-git to v$VERSION' && git push"
