@@ -248,11 +248,11 @@ func TestDiffModelConfirmMode(t *testing.T) {
 		t.Error("confirmMode should be true after 'd' on unstaged hunk")
 	}
 
-	// Press n to cancel
-	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}})
+	// Press esc to cancel
+	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	m = newModel.(DiffModel)
 	if m.confirmMode {
-		t.Error("confirmMode should be false after 'n'")
+		t.Error("confirmMode should be false after 'esc'")
 	}
 }
 
@@ -485,8 +485,8 @@ func TestDiffModelViewConfirmPrompt(t *testing.T) {
 	if !strings.Contains(view, "Discard") {
 		t.Error("view should show discard confirmation")
 	}
-	if !strings.Contains(view, "y/n") {
-		t.Error("view should show y/n prompt")
+	if !strings.Contains(view, "Type 'yes' to confirm") {
+		t.Error("view should show 'yes' confirmation prompt")
 	}
 }
 

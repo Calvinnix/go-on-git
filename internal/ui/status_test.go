@@ -224,11 +224,11 @@ func TestStatusModelConfirmMode(t *testing.T) {
 		t.Errorf("confirmMode = %v, want confirmDiscard", m.confirmMode)
 	}
 
-	// Press n to cancel
-	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}})
+	// Press esc to cancel
+	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	m = newModel.(StatusModel)
 	if m.confirmMode != confirmNone {
-		t.Errorf("confirmMode = %v, want confirmNone after 'n'", m.confirmMode)
+		t.Errorf("confirmMode = %v, want confirmNone after 'esc'", m.confirmMode)
 	}
 }
 
@@ -541,8 +541,8 @@ func TestStatusModelViewConfirmDiscard(t *testing.T) {
 	if !strings.Contains(view, "Discard") {
 		t.Error("view should show discard confirmation")
 	}
-	if !strings.Contains(view, "y/n") {
-		t.Error("view should show y/n prompt")
+	if !strings.Contains(view, "Type 'yes' to confirm") {
+		t.Error("view should show 'yes' confirmation prompt")
 	}
 }
 

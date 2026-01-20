@@ -20,6 +20,7 @@ type DiffModel struct {
 	scrollOffset     int          // scroll position within hunk content
 	showHelp         bool
 	confirmMode      bool
+	confirmInput     string
 	lastKey          string
 	err              error
 	width            int
@@ -97,14 +98,29 @@ func (m DiffModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.confirmMode {
 			switch key {
-			case "y", "Y":
+			case "backspace":
+				if len(m.confirmInput) > 0 {
+					m.confirmInput = m.confirmInput[:len(m.confirmInput)-1]
+				}
+				return m, nil
+			case "enter":
+				if m.confirmInput == "yes" {
+					m.confirmMode = false
+					m.confirmInput = ""
+					return m, m.doDiscard()
+				}
+				return m, nil
+			case "esc":
 				m.confirmMode = false
-				return m, m.doDiscard()
-			case "n", "N", "esc":
-				m.confirmMode = false
+				m.confirmInput = ""
+				return m, nil
+			default:
+				// Only accept lowercase letters for typing "yes"
+				if len(key) == 1 && key[0] >= 'a' && key[0] <= 'z' {
+					m.confirmInput += key
+				}
 				return m, nil
 			}
-			return m, nil
 		}
 
 		// Handle hunk detail view navigation
@@ -667,7 +683,7 @@ func (m DiffModel) View() string {
 	if m.confirmMode {
 		sb.WriteString("\n")
 		hunk := m.hunks[m.cursor]
-		sb.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard hunk from '%s'? (y/n) ", hunk.FilePath)))
+		sb.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard hunk from '%s'? Type 'yes' to confirm: %s", hunk.FilePath, m.confirmInput)))
 	}
 
 	return m.anchorBottom(sb.String())
@@ -711,7 +727,7 @@ func (m DiffModel) renderHunkDetail() string {
 
 	// Confirm prompt (only shown when confirming)
 	if m.confirmMode {
-		sb.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard hunk from '%s'? (y/n) ", hunk.FilePath)))
+		sb.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard hunk from '%s'? Type 'yes' to confirm: %s", hunk.FilePath, m.confirmInput)))
 	}
 
 	return sb.String()

@@ -47,6 +47,7 @@ type StatusModel struct {
 	showHelp        bool
 	showVerboseHelp bool
 	confirmMode     confirmAction
+	confirmInput    string
 	stashMode       stashMode
 	stashInput      textinput.Model
 	commitMode      bool
@@ -104,16 +105,38 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Handle confirm mode
 		if m.confirmMode != confirmNone {
+			// Discard requires typing 'yes' (destructive operation)
+			if m.confirmMode == confirmDiscard {
+				switch key {
+				case "backspace":
+					if len(m.confirmInput) > 0 {
+						m.confirmInput = m.confirmInput[:len(m.confirmInput)-1]
+					}
+					return m, nil
+				case "enter":
+					if m.confirmInput == "yes" {
+						m.confirmMode = confirmNone
+						m.confirmInput = ""
+						return m, m.doDiscard()
+					}
+					return m, nil
+				case "esc":
+					m.confirmMode = confirmNone
+					m.confirmInput = ""
+					return m, nil
+				default:
+					// Only accept lowercase letters for typing "yes"
+					if len(key) == 1 && key[0] >= 'a' && key[0] <= 'z' {
+						m.confirmInput += key
+					}
+					return m, nil
+				}
+			}
+			// Push uses simple y/n confirmation (not destructive)
 			switch key {
 			case "y", "Y":
-				action := m.confirmMode
 				m.confirmMode = confirmNone
-				if action == confirmDiscard {
-					return m, m.doDiscard()
-				} else if action == confirmPush {
-					return m, m.doPush()
-				}
-				return m, nil
+				return m, m.doPush()
 			case "n", "N", "esc":
 				m.confirmMode = confirmNone
 				return m, nil
@@ -770,9 +793,9 @@ func (m StatusModel) View() string {
 	if m.confirmMode == confirmDiscard {
 		items := m.getSelectedItems()
 		if len(items) == 1 {
-			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard '%s'? (y/n) ", items[0].File.Path)))
+			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard '%s'? Type 'yes' to confirm: %s", items[0].File.Path, m.confirmInput)))
 		} else {
-			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard %d files? (y/n) ", len(items))))
+			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Discard %d files? Type 'yes' to confirm: %s", len(items), m.confirmInput)))
 		}
 	} else if m.confirmMode == confirmPush {
 		if m.branchStatus.Ahead == 1 {
