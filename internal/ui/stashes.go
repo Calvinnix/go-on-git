@@ -315,21 +315,29 @@ func (m StashDiffModel) renderHelp() string {
 
 // StashesModel is the bubbletea model for the stashes view
 type StashesModel struct {
-	stashes       []git.Stash
-	cursor        int
-	showHelp      bool
-	confirmMode   bool
-	confirmAction string // "drop", "pop"
-	diffModel     StashDiffModel
-	lastKey       string
-	err           error
-	width         int
-	height        int
+	stashes         []git.Stash
+	cursor          int
+	showHelp        bool
+	showVerboseHelp bool
+	confirmMode     bool
+	confirmAction   string // "drop", "pop"
+	diffModel       StashDiffModel
+	lastKey         string
+	err             error
+	width           int
+	height          int
 }
 
 // NewStashesModel creates a new stashes model
 func NewStashesModel() StashesModel {
-	return StashesModel{}
+	return NewStashesModelWithOptions(false)
+}
+
+// NewStashesModelWithOptions creates a new stashes model with options
+func NewStashesModelWithOptions(showVerboseHelp bool) StashesModel {
+	return StashesModel{
+		showVerboseHelp: showVerboseHelp,
+	}
 }
 
 // Init initializes the model
@@ -397,6 +405,9 @@ func (m StashesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch key {
 		case Keys.Help:
 			m.showHelp = true
+			return m, nil
+		case Keys.VerboseHelp:
+			m.showVerboseHelp = !m.showVerboseHelp
 			return m, nil
 		case Keys.Down, "down":
 			if len(m.stashes) > 0 {
@@ -525,7 +536,7 @@ func (m StashesModel) View() string {
 		return sb.String()
 	}
 
-	sb.WriteString(StyleSectionHeader.Render("Stashes"))
+	sb.WriteString(m.renderHeader())
 	sb.WriteString("\n\n")
 
 	for i, stash := range m.stashes {
@@ -540,11 +551,7 @@ func (m StashesModel) View() string {
 		}
 		label += ": " + stash.Message
 
-		if i == m.cursor {
-			sb.WriteString(StyleSelected.Render(prefix + label))
-		} else {
-			sb.WriteString(prefix + label)
-		}
+		sb.WriteString(prefix + label)
 		sb.WriteString("\n")
 	}
 
@@ -558,6 +565,42 @@ func (m StashesModel) View() string {
 		case "pop":
 			sb.WriteString(StyleConfirm.Render(fmt.Sprintf("Pop stash@{%d}? (y/n) ", stash.Index)))
 		}
+	}
+
+	// Help bar (only show when showVerboseHelp is on and not in confirm mode)
+	if m.showVerboseHelp && !m.confirmMode {
+		sb.WriteString("\n\n")
+		sb.WriteString(m.renderHelpBar())
+	}
+
+	return sb.String()
+}
+
+func (m StashesModel) renderHeader() string {
+	return StyleMuted.Render("> git stash list") + "  " + StyleMuted.Render("(esc to go back)") + "\n" + StyleMuted.Render("───────────────────────────────────────────────────────────────")
+}
+
+func (m StashesModel) renderHelpBar() string {
+	var sb strings.Builder
+
+	sb.WriteString(StyleMuted.Render("───────────────────────────────────────────────────────────────"))
+	sb.WriteString("\n")
+
+	items := []struct{ key, desc string }{
+		{formatKeyList(Keys.Down, Keys.Up), "navigate"},
+		{formatKeyList(Keys.Right, "→"), "view diff"},
+		{"a", "apply"},
+		{"p", "pop"},
+		{"d", "drop"},
+		{Keys.Help, "help"},
+		{formatKeyList(Keys.Left, "ESC"), "back"},
+	}
+
+	for _, item := range items {
+		sb.WriteString(StyleHelpKey.Render(item.key))
+		sb.WriteString(" ")
+		sb.WriteString(StyleHelpDesc.Render(item.desc))
+		sb.WriteString("  ")
 	}
 
 	return sb.String()

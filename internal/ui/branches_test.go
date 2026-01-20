@@ -412,8 +412,8 @@ func TestBranchesModelView(t *testing.T) {
 
 	view := m.View()
 
-	if !strings.Contains(view, "Branches") {
-		t.Error("view should contain 'Branches' header")
+	if !strings.Contains(view, "git branch") {
+		t.Error("view should contain 'git branch' header")
 	}
 	if !strings.Contains(view, "main") {
 		t.Error("view should contain 'main' branch")

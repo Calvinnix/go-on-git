@@ -9,13 +9,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+
 // LogModel is the bubbletea model for the log view
 type LogModel struct {
-	lines        []string
-	scrollOffset int
-	err          error
-	width        int
-	height       int
+	lines           []string
+	scrollOffset    int
+	showHelp        bool
+	showVerboseHelp bool
+	err             error
+	width           int
+	height          int
 }
 
 // NewLogModel creates a new log model
@@ -28,6 +31,15 @@ func NewLogModelWithSize(width, height int) LogModel {
 	return LogModel{
 		width:  width,
 		height: height,
+	}
+}
+
+// NewLogModelWithOptions creates a new log model with all options
+func NewLogModelWithOptions(width, height int, showVerboseHelp bool) LogModel {
+	return LogModel{
+		width:           width,
+		height:          height,
+		showVerboseHelp: showVerboseHelp,
 	}
 }
 
@@ -54,7 +66,20 @@ func (m LogModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		key := msg.String()
 
-		visibleLines := m.height - 2
+		// Handle help mode
+		if m.showHelp {
+			if key == Keys.Help || key == "esc" || key == Keys.Quit {
+				m.showHelp = false
+			}
+			return m, nil
+		}
+
+		// Account for header (2 lines) and optionally help bar (2 lines)
+		reservedLines := 4
+		if m.showVerboseHelp {
+			reservedLines = 6
+		}
+		visibleLines := m.height - reservedLines
 		if visibleLines < 1 {
 			visibleLines = 10
 		}
@@ -64,6 +89,12 @@ func (m LogModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch key {
+		case Keys.Help:
+			m.showHelp = true
+			return m, nil
+		case Keys.VerboseHelp:
+			m.showVerboseHelp = !m.showVerboseHelp
+			return m, nil
 		case Keys.Down, "down":
 			m.scrollOffset = min(m.scrollOffset+1, maxOffset)
 			return m, nil
@@ -103,21 +134,42 @@ func (m LogModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the log view
 func (m LogModel) View() string {
+	if m.showHelp {
+		return m.renderHelp()
+	}
+
 	var content strings.Builder
+
+	// Header
+	content.WriteString(m.renderHeader())
+	content.WriteString("\n\n")
 
 	if m.err != nil {
 		content.WriteString(StyleUnstaged.Render(fmt.Sprintf("Error: %v", m.err)))
 		content.WriteString("\n")
+		if m.showVerboseHelp {
+			content.WriteString("\n")
+			content.WriteString(m.renderHelpBar())
+		}
 		return m.anchorBottom(content.String())
 	}
 
 	if len(m.lines) == 0 {
 		content.WriteString(StyleMuted.Render("Loading..."))
 		content.WriteString("\n")
+		if m.showVerboseHelp {
+			content.WriteString("\n")
+			content.WriteString(m.renderHelpBar())
+		}
 		return m.anchorBottom(content.String())
 	}
 
-	visibleLines := m.height - 2
+	// Account for header (2 lines) and optionally help bar (2 lines)
+	reservedLines := 4
+	if m.showVerboseHelp {
+		reservedLines = 6
+	}
+	visibleLines := m.height - reservedLines
 	if visibleLines < 1 {
 		visibleLines = 20
 	}
@@ -139,7 +191,16 @@ func (m LogModel) View() string {
 		content.WriteString("\n")
 	}
 
+	if m.showVerboseHelp {
+		content.WriteString("\n")
+		content.WriteString(m.renderHelpBar())
+	}
+
 	return m.anchorBottom(content.String())
+}
+
+func (m LogModel) renderHeader() string {
+	return StyleMuted.Render("> git log") + "  " + StyleMuted.Render("(esc to go back)") + "\n" + StyleMuted.Render("───────────────────────────────────────────────────────────────")
 }
 
 func (m LogModel) anchorBottom(content string) string {
@@ -149,4 +210,60 @@ func (m LogModel) anchorBottom(content string) string {
 	}
 	padding := m.height - lines - 1
 	return strings.Repeat("\n", padding) + content
+}
+
+func (m LogModel) renderHelpBar() string {
+	var sb strings.Builder
+
+	sb.WriteString(StyleMuted.Render("───────────────────────────────────────────────────────────────"))
+	sb.WriteString("\n")
+
+	items := []struct{ key, desc string }{
+		{formatKeyList(Keys.Down, Keys.Up), "scroll"},
+		{formatKeyList(Keys.Top, Keys.Bottom), "top/bottom"},
+		{"ctrl+d/u", "page down/up"},
+		{Keys.Help, "help"},
+		{formatKeyList(Keys.Left, "ESC"), "back"},
+	}
+
+	for _, item := range items {
+		sb.WriteString(StyleHelpKey.Render(item.key))
+		sb.WriteString(" ")
+		sb.WriteString(StyleHelpDesc.Render(item.desc))
+		sb.WriteString("  ")
+	}
+
+	return sb.String()
+}
+
+func (m LogModel) renderHelp() string {
+	var sb strings.Builder
+
+	sb.WriteString(StyleHelpTitle.Render("Log Shortcuts"))
+	sb.WriteString("\n\n")
+
+	moveKeys := formatKeyList(Keys.Down, Keys.Up, "↓", "↑")
+	topKey := formatDoubleKey(Keys.Top)
+	backKeys := formatKeyList(Keys.Left, "←", "ESC")
+
+	help := []struct {
+		key  string
+		desc string
+	}{
+		{moveKeys, "Scroll down/up"},
+		{topKey, "Go to top"},
+		{Keys.Bottom, "Go to bottom"},
+		{"ctrl+d", "Page down"},
+		{"ctrl+u", "Page up"},
+		{Keys.Help, "Toggle help"},
+		{backKeys, "Go back"},
+	}
+
+	for _, h := range help {
+		sb.WriteString(fmt.Sprintf("  %s  %s\n",
+			StyleHelpKey.Render(fmt.Sprintf("%-8s", h.key)),
+			StyleHelpDesc.Render(h.desc)))
+	}
+
+	return sb.String()
 }

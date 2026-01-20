@@ -539,8 +539,8 @@ func TestAppModelViewBranches(t *testing.T) {
 
 	view := m.View()
 
-	if !strings.Contains(view, "Branches") {
-		t.Error("view should show Branches header")
+	if !strings.Contains(view, "git branch") {
+		t.Error("view should show git branch header")
 	}
 }
 
@@ -551,8 +551,8 @@ func TestAppModelViewStashes(t *testing.T) {
 
 	view := m.View()
 
-	if !strings.Contains(view, "Stashes") {
-		t.Error("view should show Stashes header")
+	if !strings.Contains(view, "git stash") {
+		t.Error("view should show git stash header")
 	}
 }
 

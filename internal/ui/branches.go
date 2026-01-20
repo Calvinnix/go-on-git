@@ -15,6 +15,7 @@ type BranchesModel struct {
 	branches            []git.Branch
 	cursor              int
 	showHelp            bool
+	showVerboseHelp     bool
 	inputMode           bool
 	deleteConfirmMode   bool
 	forceDeleteMode     bool
@@ -29,6 +30,11 @@ type BranchesModel struct {
 
 // NewBranchesModel creates a new branches model
 func NewBranchesModel() BranchesModel {
+	return NewBranchesModelWithOptions(false)
+}
+
+// NewBranchesModelWithOptions creates a new branches model with options
+func NewBranchesModelWithOptions(showVerboseHelp bool) BranchesModel {
 	ti := textinput.New()
 	ti.Placeholder = "New branch name"
 	ti.CharLimit = 100
@@ -40,8 +46,9 @@ func NewBranchesModel() BranchesModel {
 	di.Width = 40
 
 	return BranchesModel{
-		branchInput: ti,
-		deleteInput: di,
+		branchInput:     ti,
+		deleteInput:     di,
+		showVerboseHelp: showVerboseHelp,
 	}
 }
 
@@ -152,6 +159,9 @@ func (m BranchesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch key {
 		case Keys.Help:
 			m.showHelp = true
+			return m, nil
+		case Keys.VerboseHelp:
+			m.showVerboseHelp = !m.showVerboseHelp
 			return m, nil
 		case Keys.Down, "down":
 			if len(m.branches) > 0 {
@@ -299,7 +309,7 @@ func (m BranchesModel) View() string {
 		return sb.String()
 	}
 
-	sb.WriteString(StyleSectionHeader.Render("Branches"))
+	sb.WriteString(m.renderHeader())
 	sb.WriteString("\n\n")
 
 	for i, branch := range m.branches {
@@ -316,11 +326,9 @@ func (m BranchesModel) View() string {
 			name = "  " + name
 		}
 
-		// Style based on selection
+		// Style based on current branch
 		var line string
-		if i == m.cursor {
-			line = StyleSelected.Render(prefix + name)
-		} else if branch.IsCurrent {
+		if branch.IsCurrent {
 			line = prefix + StyleStaged.Render(name)
 		} else {
 			line = prefix + name
@@ -381,6 +389,41 @@ func (m BranchesModel) View() string {
 		sb.WriteString("New branch name: ")
 		sb.WriteString(m.branchInput.View())
 		sb.WriteString(StyleMuted.Render("  (enter to create, esc to cancel)"))
+	}
+
+	// Help bar (only show when showVerboseHelp is on and not in a special mode)
+	if m.showVerboseHelp && !m.inputMode && !m.deleteConfirmMode && !m.forceDeleteMode {
+		sb.WriteString("\n\n")
+		sb.WriteString(m.renderHelpBar())
+	}
+
+	return sb.String()
+}
+
+func (m BranchesModel) renderHeader() string {
+	return StyleMuted.Render("> git branch") + "  " + StyleMuted.Render("(esc to go back)") + "\n" + StyleMuted.Render("───────────────────────────────────────────────────────────────")
+}
+
+func (m BranchesModel) renderHelpBar() string {
+	var sb strings.Builder
+
+	sb.WriteString(StyleMuted.Render("───────────────────────────────────────────────────────────────"))
+	sb.WriteString("\n")
+
+	items := []struct{ key, desc string }{
+		{formatKeyList(Keys.Down, Keys.Up), "navigate"},
+		{formatKeyList(Keys.Right, "Enter"), "checkout"},
+		{Keys.NewBranch, "new"},
+		{Keys.Delete, "delete"},
+		{Keys.Help, "help"},
+		{formatKeyList(Keys.Left, "ESC"), "back"},
+	}
+
+	for _, item := range items {
+		sb.WriteString(StyleHelpKey.Render(item.key))
+		sb.WriteString(" ")
+		sb.WriteString(StyleHelpDesc.Render(item.desc))
+		sb.WriteString("  ")
 	}
 
 	return sb.String()

@@ -561,8 +561,8 @@ func TestStashesModelView(t *testing.T) {
 
 	view := m.View()
 
-	if !strings.Contains(view, "Stashes") {
-		t.Error("view should contain 'Stashes' header")
+	if !strings.Contains(view, "git stash") {
+		t.Error("view should contain 'git stash' header")
 	}
 	if !strings.Contains(view, "stash@{0}") {
 		t.Error("view should contain stash index")

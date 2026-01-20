@@ -113,21 +113,21 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(tea.EnterAltScreen, m.diff.Init())
 			} else if key == Keys.Branches {
 				// Enter branches view
-				m.branches = NewBranchesModel()
+				m.branches = NewBranchesModelWithOptions(m.status.showVerboseHelp)
 				m.branches.width = m.width
 				m.branches.height = m.height
 				m.mode = viewBranches
 				return m, tea.Batch(tea.EnterAltScreen, m.branches.Init())
 			} else if key == Keys.Stashes {
 				// Enter stashes view
-				m.stashes = NewStashesModel()
+				m.stashes = NewStashesModelWithOptions(m.status.showVerboseHelp)
 				m.stashes.width = m.width
 				m.stashes.height = m.height
 				m.mode = viewStashes
 				return m, tea.Batch(tea.EnterAltScreen, m.stashes.Init())
 			} else if key == Keys.Log {
 				// Enter log view
-				m.log = NewLogModelWithSize(m.width, m.height)
+				m.log = NewLogModelWithOptions(m.width, m.height, m.status.showVerboseHelp)
 				m.mode = viewLog
 				return m, tea.Batch(tea.EnterAltScreen, m.log.Init())
 			}
@@ -227,8 +227,10 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case viewLog:
 			// Handle back navigation from log
 			if key == Keys.Left || key == "left" || key == "esc" || key == Keys.Quit || key == Keys.Log {
-				m.mode = viewStatus
-				return m, tea.Batch(tea.ExitAltScreen, refreshStatus)
+				if !m.log.showHelp {
+					m.mode = viewStatus
+					return m, tea.Batch(tea.ExitAltScreen, refreshStatus)
+				}
 			}
 		}
 	}
