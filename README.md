@@ -2,6 +2,8 @@
 
 A lightweight terminal user interface for Git, built with Go and [Bubbletea](https://github.com/charmbracelet/bubbletea).
 
+![go-on-git](go-on-git.png)
+
 ## Installation
 
 ### Homebrew
