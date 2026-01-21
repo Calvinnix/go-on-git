@@ -1,8 +1,10 @@
 # go-on-git
 
-A lightweight terminal user interface for Git, built with Go and [Bubbletea](https://github.com/charmbracelet/bubbletea).
+**The Git you already know. Now interactive.**
 
 ![go-on-git](go-on-git.png)
+
+![demo](demo.gif)
 
 ## Installation
 
