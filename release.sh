@@ -9,10 +9,14 @@ REPO="Calvinnix/go-on-git"
 # Get current version from main.go
 CURRENT_VERSION=$(grep 'const version' main.go | sed 's/.*"\(.*\)".*/\1/')
 
+# Calculate next minor version
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+NEXT_VERSION="$MAJOR.$((MINOR + 1)).$PATCH"
+
 # Prompt for version
 echo "Current version: $CURRENT_VERSION"
-read -p "Enter version to release (press Enter for $CURRENT_VERSION): " INPUT_VERSION
-VERSION="${INPUT_VERSION:-$CURRENT_VERSION}"
+read -p "Enter version to release (press Enter for $NEXT_VERSION): " INPUT_VERSION
+VERSION="${INPUT_VERSION:-$NEXT_VERSION}"
 
 # Update main.go if version changed
 if [ "$VERSION" != "$CURRENT_VERSION" ]; then
