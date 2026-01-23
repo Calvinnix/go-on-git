@@ -24,6 +24,7 @@ const (
 	confirmNone confirmAction = iota
 	confirmDiscard
 	confirmPush
+	confirmStash
 )
 
 type stashMode int
@@ -48,9 +49,11 @@ type StatusModel struct {
 	showVerboseHelp bool
 	confirmMode     confirmAction
 	confirmInput    string
-	stashMode       stashMode
-	stashInput      textinput.Model
-	commitMode      bool
+	stashMode           stashMode
+	stashInput          textinput.Model
+	pendingStashMode    stashMode
+	pendingStashMessage string
+	commitMode          bool
 	commitInput     textinput.Model
 	quitting        bool
 	lastKey         string
@@ -105,8 +108,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Handle confirm mode
 		if m.confirmMode != confirmNone {
-			// Discard requires typing 'yes' (destructive operation)
-			if m.confirmMode == confirmDiscard {
+			// Discard and stash require typing 'yes'
+			if m.confirmMode == confirmDiscard || m.confirmMode == confirmStash {
 				switch key {
 				case "backspace":
 					if len(m.confirmInput) > 0 {
@@ -115,14 +118,26 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				case "enter":
 					if m.confirmInput == "yes" {
+						action := m.confirmMode
 						m.confirmMode = confirmNone
 						m.confirmInput = ""
-						return m, m.doDiscard()
+						switch action {
+						case confirmDiscard:
+							return m, m.doDiscard()
+						case confirmStash:
+							mode := m.pendingStashMode
+							message := m.pendingStashMessage
+							m.pendingStashMode = stashNone
+							m.pendingStashMessage = ""
+							return m, m.doStash(mode, message)
+						}
 					}
 					return m, nil
 				case "esc":
 					m.confirmMode = confirmNone
 					m.confirmInput = ""
+					m.pendingStashMode = stashNone
+					m.pendingStashMessage = ""
 					return m, nil
 				default:
 					// Only accept lowercase letters for typing "yes"
@@ -132,7 +147,7 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 			}
-			// Push uses simple y/n confirmation (not destructive)
+			// Simple y/n confirmation for push
 			switch key {
 			case "y", "Y":
 				m.confirmMode = confirmNone
@@ -148,12 +163,14 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.stashMode != stashNone {
 			switch key {
 			case "enter":
-				mode := m.stashMode
-				message := m.stashInput.Value()
+				// Store pending stash and enter confirm mode
+				m.pendingStashMode = m.stashMode
+				m.pendingStashMessage = m.stashInput.Value()
 				m.stashMode = stashNone
 				m.stashInput.Reset()
 				m.stashInput.Blur()
-				return m, m.doStash(mode, message)
+				m.confirmMode = confirmStash
+				return m, nil
 			case "esc":
 				m.stashMode = stashNone
 				m.stashInput.Reset()
@@ -802,6 +819,17 @@ func (m StatusModel) View() string {
 			content.WriteString(fmt.Sprintf("Push 1 commit to '%s'? (y/n) ", m.branchStatus.Remote))
 		} else {
 			content.WriteString(fmt.Sprintf("Push %d commits to '%s'? (y/n) ", m.branchStatus.Ahead, m.branchStatus.Remote))
+		}
+	} else if m.confirmMode == confirmStash {
+		if m.pendingStashMode == stashAll {
+			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Stash all changes? Type 'yes' to confirm: %s", m.confirmInput)))
+		} else {
+			items := m.getSelectedItems()
+			if len(items) == 1 {
+				content.WriteString(StyleConfirm.Render(fmt.Sprintf("Stash '%s'? Type 'yes' to confirm: %s", items[0].File.DisplayPath, m.confirmInput)))
+			} else {
+				content.WriteString(StyleConfirm.Render(fmt.Sprintf("Stash %d files? Type 'yes' to confirm: %s", len(items), m.confirmInput)))
+			}
 		}
 	} else if m.stashMode != stashNone {
 		if m.stashMode == stashAll {
