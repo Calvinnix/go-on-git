@@ -168,7 +168,7 @@ func (m StashDiffModel) View() string {
 	}
 
 	if m.diff == nil || len(m.hunks) == 0 {
-		sb.WriteString(StyleMuted.Render("No changes in stash"))
+		sb.WriteString(StyleEmpty.Render("No changes in stash"))
 		sb.WriteString("\n")
 		return sb.String()
 	}
@@ -580,7 +580,7 @@ func (m StashesModel) View() string {
 	}
 
 	if len(m.stashes) == 0 {
-		sb.WriteString(StyleMuted.Render("No stashes"))
+		sb.WriteString(StyleEmpty.Render("No stashes"))
 		sb.WriteString("\n")
 		return sb.String()
 	}

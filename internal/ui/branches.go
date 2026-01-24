@@ -353,7 +353,7 @@ func (m BranchesModel) View() string {
 	}
 
 	if len(m.branches) == 0 {
-		sb.WriteString(StyleMuted.Render("No branches found"))
+		sb.WriteString(StyleEmpty.Render("No branches found"))
 		sb.WriteString("\n")
 		return sb.String()
 	}

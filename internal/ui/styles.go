@@ -58,7 +58,7 @@ var (
 	StyleConfirm = lipgloss.NewStyle().Foreground(colorRed).Bold(true)
 
 	// Empty state
-	StyleEmpty = lipgloss.NewStyle().Foreground(colorGray).Italic(true)
+	StyleEmpty = lipgloss.NewStyle().Italic(true)
 )
 
 // StatusChar returns the styled status word for display based on the section
