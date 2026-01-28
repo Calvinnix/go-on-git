@@ -13,6 +13,7 @@ import (
 var (
 	repoRoot     string
 	repoRootOnce sync.Once
+	gitMu        sync.Mutex // serializes all git operations
 )
 
 // getRepoRoot returns the git repository root directory.
@@ -74,6 +75,9 @@ func ToDisplayPath(repoRelativePath string) string {
 
 // Run executes a git command and returns the output
 func Run(args ...string) (string, error) {
+	gitMu.Lock()
+	defer gitMu.Unlock()
+
 	cmd := exec.Command("git", args...)
 	cmd.Dir = getRepoRoot()
 	var stdout, stderr bytes.Buffer
@@ -90,6 +94,9 @@ func Run(args ...string) (string, error) {
 // RunAllowFailure executes a git command and returns output even if the command fails
 // (useful for commands like diff --no-index which exit with 1 when there are differences)
 func RunAllowFailure(args ...string) (string, error) {
+	gitMu.Lock()
+	defer gitMu.Unlock()
+
 	cmd := exec.Command("git", args...)
 	cmd.Dir = getRepoRoot()
 	var stdout, stderr bytes.Buffer
