@@ -241,6 +241,25 @@ func Push() error {
 	return err
 }
 
+// PushSetUpstream pushes and sets the upstream tracking branch
+func PushSetUpstream(remote, branch string) error {
+	_, err := Run("push", "-u", remote, branch)
+	return err
+}
+
+// GetRemotes returns the list of configured remotes
+func GetRemotes() ([]string, error) {
+	output, err := Run("remote")
+	if err != nil {
+		return nil, err
+	}
+	if output == "" {
+		return nil, nil
+	}
+	lines := strings.Split(strings.TrimSpace(output), "\n")
+	return lines, nil
+}
+
 // Commit creates a commit with the given message
 func Commit(message string) error {
 	_, err := Run("commit", "-m", message)

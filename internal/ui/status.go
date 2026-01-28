@@ -24,6 +24,7 @@ const (
 	confirmNone confirmAction = iota
 	confirmDiscard
 	confirmPush
+	confirmPushNew
 	confirmStash
 )
 
@@ -49,6 +50,7 @@ type StatusModel struct {
 	showVerboseHelp bool
 	confirmMode     confirmAction
 	confirmInput    string
+	pendingPushRemote   string
 	stashMode           stashMode
 	stashInput          textinput.Model
 	pendingStashMode    stashMode
@@ -150,10 +152,17 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Simple y/n confirmation for push
 			switch key {
 			case "y", "Y":
+				action := m.confirmMode
+				remote := m.pendingPushRemote
 				m.confirmMode = confirmNone
+				m.pendingPushRemote = ""
+				if action == confirmPushNew {
+					return m, m.doPushSetUpstream(remote)
+				}
 				return m, m.doPush()
 			case "n", "N", "esc":
 				m.confirmMode = confirmNone
+				m.pendingPushRemote = ""
 				return m, nil
 			}
 			return m, nil
@@ -313,6 +322,22 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key == Keys.Push:
 			if m.branchStatus.Remote != "" && m.branchStatus.Ahead > 0 {
 				m.confirmMode = confirmPush
+				return m, nil
+			}
+			if m.branchStatus.Remote == "" {
+				// No upstream - detect remotes and offer to push with -u
+				remotes, err := git.GetRemotes()
+				if err != nil {
+					m.err = err
+					return m, nil
+				}
+				if len(remotes) == 0 {
+					m.err = fmt.Errorf("no remotes configured")
+					return m, nil
+				}
+				// Use first remote (typically "origin")
+				m.pendingPushRemote = remotes[0]
+				m.confirmMode = confirmPushNew
 				return m, nil
 			}
 			return m, m.doPush()
@@ -585,6 +610,17 @@ func (m StatusModel) doPush() tea.Cmd {
 	}
 }
 
+func (m StatusModel) doPushSetUpstream(remote string) tea.Cmd {
+	branch := m.branchStatus.Name
+	return func() tea.Msg {
+		err := git.PushSetUpstream(remote, branch)
+		if err != nil {
+			return errMsg{err}
+		}
+		return refreshStatus()
+	}
+}
+
 func (m StatusModel) doCommit(message string) tea.Cmd {
 	return func() tea.Msg {
 		err := git.Commit(message)
@@ -680,6 +716,9 @@ func (m StatusModel) View() string {
 			} else {
 				content.WriteString(fmt.Sprintf("Push %d commits to '%s'? (y/n) ", m.branchStatus.Ahead, m.branchStatus.Remote))
 			}
+		} else if m.confirmMode == confirmPushNew {
+			content.WriteString("\n")
+			content.WriteString(fmt.Sprintf("Push branch '%s' to '%s'? (y/n) ", m.branchStatus.Name, m.pendingPushRemote))
 		}
 
 		if m.showVerboseHelp {
@@ -820,6 +859,8 @@ func (m StatusModel) View() string {
 		} else {
 			content.WriteString(fmt.Sprintf("Push %d commits to '%s'? (y/n) ", m.branchStatus.Ahead, m.branchStatus.Remote))
 		}
+	} else if m.confirmMode == confirmPushNew {
+		content.WriteString(fmt.Sprintf("Push branch '%s' to '%s'? (y/n) ", m.branchStatus.Name, m.pendingPushRemote))
 	} else if m.confirmMode == confirmStash {
 		if m.pendingStashMode == stashAll {
 			content.WriteString(StyleConfirm.Render(fmt.Sprintf("Stash all changes? Type 'yes' to confirm: %s", m.confirmInput)))
