@@ -310,13 +310,22 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case key == " ":
-			return m, m.toggleStage()
+			cmd := m.toggleStage()
+			m.selected = make(map[int]bool)
+			m.visualMode = false
+			return m, cmd
 		case key == Keys.Stage:
-			return m, m.stageFiles()
+			cmd := m.stageFiles()
+			m.selected = make(map[int]bool)
+			m.visualMode = false
+			return m, cmd
 		case key == Keys.StageAll:
 			return m, m.stageAll()
 		case key == Keys.Unstage:
-			return m, m.unstageFiles()
+			cmd := m.unstageFiles()
+			m.selected = make(map[int]bool)
+			m.visualMode = false
+			return m, cmd
 		case key == Keys.UnstageAll:
 			return m, m.unstageAll()
 		case key == Keys.Discard:

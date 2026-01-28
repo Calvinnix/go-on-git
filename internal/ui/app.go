@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const watchInterval = 500 * time.Millisecond
+const watchInterval = 2 * time.Second
 
 type tickMsg time.Time
 
