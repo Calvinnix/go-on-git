@@ -37,6 +37,16 @@ func ResetRepoRoot() {
 	repoRoot = ""
 }
 
+// IsLocked returns true if a git operation is in progress (index.lock exists)
+func IsLocked() bool {
+	root := getRepoRoot()
+	if root == "" {
+		return false
+	}
+	_, err := os.Stat(filepath.Join(root, ".git", "index.lock"))
+	return err == nil
+}
+
 // ToDisplayPath converts a repo-root-relative path to a path relative
 // to the current working directory (for display purposes).
 func ToDisplayPath(repoRelativePath string) string {

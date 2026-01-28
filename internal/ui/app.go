@@ -86,8 +86,8 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.height = msg.Height
 
 	case tickMsg:
-		// Only auto-refresh in status view when not in a blocking mode
-		if m.mode == viewStatus && !m.status.isBlocking() {
+		// Only auto-refresh in status view when not in a blocking mode and git isn't locked
+		if m.mode == viewStatus && !m.status.isBlocking() && !git.IsLocked() {
 			return m, tea.Batch(refreshStatus, tickCmd())
 		}
 		return m, tickCmd()

@@ -382,6 +382,10 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case statusMsg:
+		// Skip update if in interactive mode to avoid disrupting user
+		if m.visualMode || len(m.selected) > 0 {
+			return m, nil
+		}
 		m.status = msg.status
 		m.branchStatus = msg.branchStatus
 		m.items = buildItems(msg.status)
@@ -390,7 +394,6 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.ensureCursorVisible()
 		m.selected = make(map[int]bool)
-		m.visualMode = false
 		return m, nil
 
 	case errMsg:
