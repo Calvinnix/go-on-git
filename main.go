@@ -14,22 +14,29 @@ import (
 const version = "0.18.0"
 
 func main() {
+	args := os.Args[1:]
+
+	// Handle --help and --version before git repo check
+	for _, arg := range args {
+		switch arg {
+		case "--help", "-h":
+			printHelp()
+			os.Exit(0)
+		case "--version", "-v":
+			fmt.Printf("go-on-git version %s\n", version)
+			os.Exit(0)
+		}
+	}
+
 	if !git.IsGitRepo() {
 		fmt.Fprintln(os.Stderr, "fatal: not a git repository")
 		os.Exit(1)
 	}
 
-	args := os.Args[1:]
 	showHelp := true
 
 	for _, arg := range args {
 		switch {
-		case arg == "--help" || arg == "-h":
-			printHelp()
-			os.Exit(0)
-		case arg == "--version" || arg == "-v":
-			fmt.Printf("go-on-git version %s\n", version)
-			os.Exit(0)
 		case arg == "--hide-help":
 			showHelp = false
 		case strings.HasPrefix(arg, "--key."):
