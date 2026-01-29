@@ -209,6 +209,12 @@ func (m DiffModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.confirmMode = true
 				}
 				return m, nil
+			case Keys.Edit:
+				if len(m.hunks) > 0 && m.cursor < len(m.hunks) {
+					hunk := m.hunks[m.cursor]
+					return m, openInEditor(hunk.FilePath, hunk.StartNew)
+				}
+				return m, nil
 			case Keys.Quit:
 				return m, tea.Quit
 			case Keys.Help:
@@ -279,6 +285,12 @@ func (m DiffModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Only allow discard on unstaged hunks
 			if len(m.hunks) > 0 && m.cursor < len(m.hunks) && !m.hunks[m.cursor].Staged {
 				m.confirmMode = true
+			}
+			return m, nil
+		case Keys.Edit:
+			if len(m.hunks) > 0 && m.cursor < len(m.hunks) {
+				hunk := m.hunks[m.cursor]
+				return m, openInEditor(hunk.FilePath, hunk.StartNew)
 			}
 			return m, nil
 		}

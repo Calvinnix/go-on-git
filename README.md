@@ -66,8 +66,8 @@ go-on-git has multiple views you can navigate between:
 | `l` | File diff (from status) |
 | `i` | All diffs (staged and unstaged) |
 | `b` | Branches |
-| `e` | Stashes |
-| `o` | Commit log |
+| `t` | Stashes |
+| `L` | Commit log |
 
 ### Actions
 
@@ -90,6 +90,7 @@ go-on-git has multiple views you can navigate between:
 | Key | Action |
 |-----|--------|
 | `v` | Visual mode (select multiple) |
+| `e` | Open file in $EDITOR |
 | `?` | Toggle quick help |
 | `/` | Toggle verbose help |
 | `n` | New branch (in branches view) |
@@ -128,9 +129,10 @@ Overrides that introduce new shared keys will exit with an error. Avoid mapping 
 | `file-diff` | `l` | View file diff |
 | `all-diffs` | `i` | View all diffs |
 | `branches` | `b` | View branches |
-| `stashes` | `e` | View stashes |
-| `log` | `o` | View log |
+| `stashes` | `t` | View stashes |
+| `log` | `L` | View log |
 | `visual` | `v` | Visual mode |
+| `edit` | `e` | Open in $EDITOR |
 | `help` | `?` | Quick help |
 | `verbose-help` | `/` | Verbose help |
 | `new-branch` | `n` | Create branch |

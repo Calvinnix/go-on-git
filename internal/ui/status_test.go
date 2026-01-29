@@ -78,18 +78,18 @@ func TestStatusModelNavigation(t *testing.T) {
 		t.Errorf("after second 'j', cursor = %d, want 2", m.cursor)
 	}
 
-	// Test can't go past end
+	// Test cursor wraps to top when at end
 	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
 	m = newModel.(StatusModel)
-	if m.cursor != 2 {
-		t.Errorf("cursor should stay at 2, got %d", m.cursor)
+	if m.cursor != 0 {
+		t.Errorf("cursor should wrap to 0, got %d", m.cursor)
 	}
 
-	// Test move up
+	// Test cursor wraps to bottom when at top
 	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}})
 	m = newModel.(StatusModel)
-	if m.cursor != 1 {
-		t.Errorf("after 'k', cursor = %d, want 1", m.cursor)
+	if m.cursor != 2 {
+		t.Errorf("after 'k' at top, cursor should wrap to 2, got %d", m.cursor)
 	}
 
 	// Test jump to bottom

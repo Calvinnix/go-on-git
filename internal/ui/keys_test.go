@@ -72,16 +72,19 @@ func TestDefaultKeymap(t *testing.T) {
 	if km.Branches != "b" {
 		t.Errorf("expected Branches to be 'b', got %q", km.Branches)
 	}
-	if km.Stashes != "e" {
-		t.Errorf("expected Stashes to be 'e', got %q", km.Stashes)
+	if km.Stashes != "t" {
+		t.Errorf("expected Stashes to be 't', got %q", km.Stashes)
 	}
-	if km.Log != "o" {
-		t.Errorf("expected Log to be 'o', got %q", km.Log)
+	if km.Log != "L" {
+		t.Errorf("expected Log to be 'L', got %q", km.Log)
 	}
 
 	// Test mode keys
 	if km.Visual != "v" {
 		t.Errorf("expected Visual to be 'v', got %q", km.Visual)
+	}
+	if km.Edit != "e" {
+		t.Errorf("expected Edit to be 'e', got %q", km.Edit)
 	}
 	if km.Help != "?" {
 		t.Errorf("expected Help to be '?', got %q", km.Help)

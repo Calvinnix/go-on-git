@@ -2,7 +2,9 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"go-on-git/internal/git"
@@ -272,6 +274,14 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected[m.cursor] = true
 			}
 			return m, nil
+		case key == Keys.Edit:
+			if len(m.items) > 0 {
+				m.selected = make(map[int]bool)
+				m.visualMode = false
+				item := m.items[m.cursor]
+				return m, openInEditor(item.File.Path, 0)
+			}
+			return m, nil
 		case key == Keys.Down || key == "down":
 			if len(m.items) > 0 {
 				m.cursor++
@@ -368,6 +378,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key == Keys.Commit:
 			// Inline commit with message
 			if m.status != nil && len(m.status.Staged) > 0 {
+				m.selected = make(map[int]bool)
+				m.visualMode = false
 				m.commitMode = true
 				m.commitInput.Focus()
 				return m, textinput.Blink
@@ -375,6 +387,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case key == Keys.CommitEdit:
 			// Run git commit with editor
+			m.selected = make(map[int]bool)
+			m.visualMode = false
 			m.quitting = true
 			return m, runGitCommit()
 		case key == Keys.Stash:
@@ -1119,6 +1133,25 @@ func runGitCommit() tea.Cmd {
 	c := exec.Command("git", "commit")
 	return tea.ExecProcess(c, func(err error) tea.Msg {
 		return tea.Quit()
+	})
+}
+
+func openInEditor(path string, line int) tea.Cmd {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vi"
+	}
+	// Convert to absolute path from repo root
+	fullPath := filepath.Join(git.GetRepoRoot(), path)
+	var c *exec.Cmd
+	if line > 0 {
+		// Most editors support +line syntax (vim, nano, etc.)
+		c = exec.Command(editor, fmt.Sprintf("+%d", line), fullPath)
+	} else {
+		c = exec.Command(editor, fullPath)
+	}
+	return tea.ExecProcess(c, func(err error) tea.Msg {
+		return refreshStatus()
 	})
 }
 

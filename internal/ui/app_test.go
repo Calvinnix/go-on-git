@@ -92,7 +92,7 @@ func TestAppModelNavigateToStashes(t *testing.T) {
 	m := NewAppModel()
 	m.mode = viewStatus
 
-	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'e'}})
+	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'t'}})
 	m = newModel.(AppModel)
 
 	if m.mode != viewStashes {
@@ -107,7 +107,7 @@ func TestAppModelNavigateToLog(t *testing.T) {
 	m := NewAppModel()
 	m.mode = viewStatus
 
-	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'o'}})
+	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'L'}})
 	m = newModel.(AppModel)
 
 	if m.mode != viewLog {
@@ -296,12 +296,12 @@ func TestAppModelLogKeyToggle(t *testing.T) {
 	m := NewAppModel()
 	m.mode = viewLog
 
-	// Pressing 'o' again should go back
-	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'o'}})
+	// Pressing 'L' again should go back
+	newModel, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'L'}})
 	m = newModel.(AppModel)
 
 	if m.mode != viewStatus {
-		t.Errorf("mode = %v, want viewStatus (o toggles log)", m.mode)
+		t.Errorf("mode = %v, want viewStatus (L toggles log)", m.mode)
 	}
 	if cmd == nil {
 		t.Error("should return commands for exiting to status")

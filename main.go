@@ -95,14 +95,15 @@ Navigation:
   l/→         View file diff (from status)
   i           View all diffs (staged and unstaged)
   b           View branches
-  e           View stashes
-  o           View commit log
+  t           View stashes
+  L           View commit log
   h/←/ESC     Go back
 
 Key Bindings:
   j/k, ↑/↓    Move down/up
   gg/G        Go to top/bottom
   v           Visual mode
+  e           Open file in $EDITOR
   SPACE       Stage/unstage file or hunk
   a/A         Stage file(s) / Stage all
   u/U         Unstage file(s) / Unstage all
@@ -125,5 +126,5 @@ Keymap Overrides:
     stage, stage-all, unstage, unstage-all, discard,
     commit, commit-edit, push, stash, stash-all,
     file-diff, all-diffs, branches, stashes, log,
-    visual, help, verbose-help, new-branch, delete`)
+    visual, edit, help, verbose-help, new-branch, delete`)
 }

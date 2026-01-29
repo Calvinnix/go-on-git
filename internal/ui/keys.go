@@ -37,6 +37,7 @@ type Keymap struct {
 
 	// Modes
 	Visual      string
+	Edit        string
 	Help        string
 	VerboseHelp string
 	NewBranch   string
@@ -75,6 +76,7 @@ var keymapBindings = []keymapBinding{
 	{action: "stashes", key: func(k *Keymap) *string { return &k.Stashes }},
 	{action: "log", key: func(k *Keymap) *string { return &k.Log }},
 	{action: "visual", key: func(k *Keymap) *string { return &k.Visual }},
+	{action: "edit", key: func(k *Keymap) *string { return &k.Edit }},
 	{action: "help", key: func(k *Keymap) *string { return &k.Help }},
 	{action: "verbose-help", key: func(k *Keymap) *string { return &k.VerboseHelp }},
 	{action: "new-branch", key: func(k *Keymap) *string { return &k.NewBranch }},
@@ -112,11 +114,12 @@ func DefaultKeymap() *Keymap {
 		AllDiffs: "i",
 		FullDiff: "f",
 		Branches: "b",
-		Stashes:  "e",
-		Log:      "o",
+		Stashes:  "t",
+		Log:      "L",
 
 		// Modes
 		Visual:      "v",
+		Edit:        "e",
 		Help:        "?",
 		VerboseHelp: "/",
 		NewBranch:   "n",
