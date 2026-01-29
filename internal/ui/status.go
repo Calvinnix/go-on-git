@@ -130,6 +130,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						action := m.confirmMode
 						m.confirmMode = confirmNone
 						m.confirmInput = ""
+						m.selected = make(map[int]bool)
+						m.visualMode = false
 						switch action {
 						case confirmDiscard:
 							return m, m.doDiscard()
