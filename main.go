@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const version = "0.21.0"
+const version = "0.22.0"
 
 func main() {
 	args := os.Args[1:]
