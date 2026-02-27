@@ -91,11 +91,6 @@ func NewStatusModelWithHelp(showHelp bool) StatusModel {
 	}
 }
 
-// isBlocking returns true if the model is in a mode that shouldn't be interrupted by auto-refresh
-func (m StatusModel) isBlocking() bool {
-	return m.confirmMode != confirmNone || m.commitMode || m.stashMode != stashNone || m.showHelp || m.visualMode || len(m.selected) > 0
-}
-
 // Init initializes the model
 func (m StatusModel) Init() tea.Cmd {
 	return refreshStatus
@@ -259,6 +254,8 @@ func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.quitting = true
 			return m, tea.Quit
+		case key == Keys.Refresh:
+			return m, refreshStatus
 		case key == Keys.Help:
 			m.showHelp = true
 			return m, nil
@@ -1038,6 +1035,7 @@ func (m StatusModel) renderHelp() string {
 		{
 			title: "General",
 			items: []struct{ key, desc string }{
+				{Keys.Refresh, "refresh"},
 				{Keys.Help, "help"},
 				{Keys.VerboseHelp, "help mode"},
 				{quitKeys, "quit"},
@@ -1110,6 +1108,7 @@ func (m StatusModel) renderHelpBar() string {
 		{Keys.Branches, "branches"},
 		{Keys.Stashes, "stashes"},
 		{Keys.Log, "log"},
+		{Keys.Refresh, "refresh"},
 		{Keys.VerboseHelp, "hide help"},
 	}
 

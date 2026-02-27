@@ -2,14 +2,11 @@ package ui
 
 import (
 	"go-on-git/internal/git"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const watchInterval = 1 * time.Second
-
-type tickMsg time.Time
+type tickMsg struct{}
 
 type viewMode int
 
@@ -59,14 +56,9 @@ func NewAppModelWithOptions(showHelp bool) AppModel {
 }
 
 func (m AppModel) Init() tea.Cmd {
-	return tea.Batch(m.status.Init(), tickCmd())
+	return m.status.Init()
 }
 
-func tickCmd() tea.Cmd {
-	return tea.Tick(watchInterval, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
-}
 
 func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -86,11 +78,8 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.height = msg.Height
 
 	case tickMsg:
-		// Only auto-refresh in status view when not in a blocking mode and git isn't locked
-		if m.mode == viewStatus && !m.status.isBlocking() && !git.IsLocked() {
-			return m, tea.Batch(refreshStatus, tickCmd())
-		}
-		return m, tickCmd()
+		// Auto-refresh disabled
+		return m, nil
 
 	case tea.KeyMsg:
 		key := msg.String()
