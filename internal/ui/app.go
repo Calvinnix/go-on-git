@@ -113,7 +113,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(tea.EnterAltScreen, m.diff.Init())
 				}
 				return m, nil
-			} else if key == Keys.AllDiffs {
+			} else if key == Keys.AllDiffs || key == Keys.FullDiff {
 				// Enter full diff view
 				m.diff = NewDiffModelWithSize(nil, m.width, m.height)
 				m.mode = viewFullDiff
